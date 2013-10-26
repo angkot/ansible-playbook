@@ -1,0 +1,64 @@
+---
+angkot:
+  base: /srv/angkot.web.id
+  cert: /srv/angkot.web.id/ssl/angkot.web.id
+
+  base: /srv/angkot.web.id/www
+  virtualenv: /srv/angkot.web.id/www/env
+  src: /srv/angkot.web.id/www/src
+  cert: /srv/angkot.web.id/www/cert/angkot.web.id
+  scripts: /srv/angkot.web.id/www/scripts
+  public: /srv/angkot.web.id/www/public
+  var: /srv/angkot.web.id/www/var
+
+  web:
+    name: angkot.web.id
+    aliases:
+    - www.angkot.web.id
+
+    workers: 4
+
+  db:
+    name: angkot
+    user: angkot
+    password: "{{ _angkot.db.password }}"
+
+  repo: git://github.com/angkot/angkot.git
+
+  config:
+    ga:
+      id: "{{ _angkot.config.ga.id }}"
+      host: "{{ _angkot.config.ga.host }}"
+
+    google_oauth2:
+      key: "{{ _angkot.config.google_oauth2.key }}"
+      secret: "{{ _angkot.config.google_oauth2.secret }}"
+
+    facebook:
+      key: "{{ _angkot.config.facebook.key }}"
+      secret: "{{ _angkot.config.facebook.secret }}"
+
+    twitter:
+      key: "{{ _angkot.config.twitter.key }}"
+      secret: "{{ _angkot.config.twitter.secret }}"
+
+    mapbox:
+      key: "{{ _angkot.config.mapbox.key }}"
+
+    bingmaps:
+      key: "{{ _angkot.config.bingmaps.key }}"
+
+    uservoice:
+      key: "{{ _angkot.config.uservoice.key }}"
+      forum_id: "{{ _angkot.config.uservoice.forum_id }}"
+
+angkot_user: angkot
+angkot_home: /home/angkot
+angkot_base: /srv/angkot.web.id/www
+angkot_dir: /srv/angkot.web.id/www/angkot
+workers: 1
+
+server_name: staging.dev.angkot.web.id
+server_alias: www.angkot.web.id
+server_log_dir: /srv/angkot.web.id/www/logs/nginx
+

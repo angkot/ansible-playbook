@@ -1,0 +1,8 @@
+---
+- hosts: webserver
+  vars_files:
+  - "private/{{ deploy_type }}/group_vars/webserver"
+  roles:
+  - common
+  - angkot-web
+

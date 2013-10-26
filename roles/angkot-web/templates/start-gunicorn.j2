@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+source {{ _dir.virtualenv }}/bin/activate
+cd {{ _dir.src }}
+
+WORKERS={{ angkot.web.workers }}
+BIND={{ _gunicorn_bind }}
+PIDFILE={{ _gunicorn_pidfile }}
+
+export PYTHONPATH={{ _dir.src }}:$PYTHONPATH
+
+exec gunicorn \
+    -w $WORKERS \
+    -b $BIND \
+    -p $PIDFILE \
+    angkot.wsgi:application
+

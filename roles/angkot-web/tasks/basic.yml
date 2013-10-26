@@ -1,0 +1,131 @@
+---
+- name: Remove conflicting packages
+  apt:
+    pkg={{ item }}
+    state=absent
+  with_items:
+  - apache2
+  - apache2-doc
+  - apache2-mpm-prefork
+  - apache2-utils
+  - apache2.2-bin
+  - apache2.2-common
+
+- name: Install basic packages
+  apt:
+    pkg={{ item }}
+    state=present
+    install_recommends=no
+  with_items:
+  - nginx
+  - python2.7
+  - python-pycurl              # required for adding apt repository
+  - ruby1.9.3
+
+# Python 3.3
+
+- name: Add Python 3.3 repository key
+  apt_key:
+    id=DB82666C
+    url=http://keyserver.ubuntu.com:11371/pks/lookup?op=get&search=0x5BB92C09DB82666C
+    state=present
+
+- name: Add Python 3.3 repository
+  apt_repository:
+    repo='deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu precise main'
+    state=present
+
+# Node.js
+
+- name: Add Node.js repository key
+  apt_key:
+    id=C7917B12
+    url=http://keyserver.ubuntu.com:11371/pks/lookup?op=get&search=0xB9316A7BC7917B12
+    state=present
+
+- name: Add Node.js repository
+  apt_repository:
+    repo='deb http://ppa.launchpad.net/chris-lea/node.js/ubuntu precise main'
+    state=present
+
+# PostgreSQL
+
+- name: Add PostgreSQL repository key
+  apt_key:
+    id=ACCC4CF8
+    url=https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state=present
+
+- name: Add PostgreSQL repository
+  apt_repository:
+    repo='deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main'
+    state=present
+
+# UbuntuGIS
+
+- name: Add UbuntuGIS repository key
+  apt_key:
+    id=314DF160
+    url=http://keyserver.ubuntu.com:11371/pks/lookup?op=get&search=0x089EBE08314DF160
+    state=present
+
+- name: Add UbuntuGIS repository
+  apt_repository:
+    repo='deb http://ppa.launchpad.net/ubuntugis/ppa/ubuntu precise main'
+    state=present
+
+# Install
+
+- name: Install Python 3.3, Node.js, PostgreSQL 9.3, PostGIS 2.1, etc
+  apt:
+    pkg={{ item }}
+    state=present
+    install_recommends=no
+    update_cache=yes
+  with_items:
+  - nodejs
+  - python3.3
+  - python3.3-dev
+  - postgresql-9.3-postgis-2.1
+  - postgresql-server-dev-9.3
+  - libgdal1
+  - libgeos-dev
+  - libgeos-c1
+  - libxml2-dev
+  - libxslt1-dev
+  - build-essential
+  - supervisor
+  - python-pkg-resources    # For python-virtualenv
+  - python-setuptools       # For python-virtualenv
+  - python-psycopg2         # For Ansible's postgresql_user
+
+# User
+
+- name: Create angkot user
+  user:
+    name={{ _user }}
+    comment="Angkot User"
+    state=present
+    home={{ _home }}
+    shell=/bin/bash
+
+# Virtualenv
+
+- name: Check if python-virtualenv is installed
+  register: _virtualenv_pkg
+  ignore_errors: yes
+  command:
+    dpkg -s python-virtualenv
+
+- name: Download newer virtualenv package from Ubuntu Raring repository
+  when: _virtualenv_pkg.rc != 0
+  get_url:
+    url=http://nl.archive.ubuntu.com/ubuntu/pool/universe/p/python-virtualenv/python-virtualenv_1.9.1-0ubuntu1_all.deb
+    dest=/tmp/python-virtualenv_1.9.1-0ubuntu1_all.deb
+    sha256sum=28d63382d34e8cc69c8dff0b516ce34796c59a6bf932ee03e379097e9a600966
+
+- name: Install virtualenv package
+  when: _virtualenv_pkg.rc != 0
+  command:
+    dpkg -i /tmp/python-virtualenv_1.9.1-0ubuntu1_all.deb
+

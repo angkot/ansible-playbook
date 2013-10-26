@@ -1,0 +1,59 @@
+# Sentry config. Uncomment them if you use Sentry
+# RAVEN_CONFIG = {
+#     'dsn': 'udp://484fc4a4c8b44a2dae6d5dd8f0a36dc5:f93b79f6a7da43c694ff708063659abf@localhost:9001/2',
+# }
+# INSTALLED_APPS = INSTALLED_APPS + (
+#     'raven.contrib.django.raven_compat',
+# )
+# LOGGING['root'] = {
+#     'level': 'DEBUG',
+#     'handlers': ['sentry'],
+# }
+# LOGGING['handlers']['sentry'] = {
+#     'level': 'DEBUG',
+#     'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+# }
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': '{{ angkot.db.name }}',
+        'USER': '{{ angkot.db.user }}',
+        'PASSWORD': '{{ angkot.db.password }}',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}
+
+STATIC_ROOT = '{{ _dir.static }}'
+
+GOOGLE_ANALYTICS_ID = '{{ angkot.config.ga.id }}'
+GOOGLE_ANALYTICS_HOST = '{{ angkot.config.ga.host }}'
+MAPBOX_KEY = '{{ angkot.config.mapbox.key }}'
+BING_MAPS_KEY = '{{ angkot.config.bingmaps.key }}'
+
+USERVOICE_KEY = '{{ angkot.config.uservoice.key }}'
+USERVOICE_FORUM_ID = '{{ angkot.config.uservoice.forum_id }}'
+
+ALLOWED_HOSTS = ['{{ angkot.web.name }}']
+
+DEBUG = False
+TEMPLATE_DEBUG = False
+
+ACCOUNT_USERNAME_PREFIX = 'user'
+ANGKOT_CONTRIBUTOR_TERMS_URL = 'https://github.com/fajran/angkot/wiki/Ketentuan-Kontribusi-(Rangkuman)'
+ANGKOT_PRIVACY_POLICY_URL = 'https://github.com/fajran/angkot/wiki/Kebijakan-Privasi'
+
+# Authentication keys from providers
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY= '{{ angkot.config.google_oauth2.key }}'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '{{ angkot.config.google_oauth2.secret }}'
+
+SOCIAL_AUTH_FACEBOOK_KEY = '{{ angkot.config.facebook.key }}'
+SOCIAL_AUTH_FACEBOOK_SECRET = '{{ angkot.config.facebook.secret }}'
+
+SOCIAL_AUTH_TWITTER_KEY = '{{ angkot.config.twitter.key }}'
+SOCIAL_AUTH_TWITTER_SECRET = '{{ angkot.config.twitter.secret }}'
+

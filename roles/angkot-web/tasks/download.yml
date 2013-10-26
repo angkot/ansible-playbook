@@ -1,0 +1,193 @@
+---
+# Directories
+
+- name: Create directories
+  tags:
+  - download
+  file:
+    path={{ item }}
+    state=directory
+    owner=angkot
+    group=angkot
+    mode=0755
+  with_items:
+  - "{{ _dir.base }}"
+  - "{{ _dir.public }}"
+  - "{{ _dir.static }}"
+  - "{{ _dir.app }}"
+  - "{{ _dir.bin }}"
+
+# Source code
+
+- name: Download Angkot code from git repository
+  tags:
+  - download
+  sudo: yes
+  sudo_user: angkot
+  notify:
+  - restart webserver
+  register: _angkot_src
+  git:
+    repo={{ angkot.repo }}
+    dest={{ _dir.src }}
+    version=py3
+
+# Virtualenv
+
+- name: Create virtualenv
+  tags:
+  - download
+  sudo: yes
+  sudo_user: angkot
+  register: _virtualenv
+  command:
+    virtualenv -p python3.3 {{ _dir.virtualenv }}
+    chdir={{ _dir.base }}
+    creates={{ _dir.virtualenv }}
+    # The chdir bits is important since /root is not accessible by angkot
+
+- name: Install required python libraries
+  tags:
+  - download
+  sudo: yes
+  sudo_user: angkot
+  notify:
+  - restart webserver
+  pip:
+    virtualenv={{ _dir.virtualenv }}
+    requirements={{ _dir.src }}/requirements.txt
+
+# Gem
+
+- name: Install Gem Bundler
+  tags:
+  - download
+  sudo: yes
+  sudo_user: angkot
+  gem:
+    name=bundle
+    state=present
+    user_install=yes
+
+# Database
+
+- name: Create database user
+  tags:
+  - download
+  - db
+  sudo: yes
+  sudo_user: postgres
+  postgresql_user:
+    user={{ angkot.db.user }}
+    password={{ angkot.db.password }}
+
+- name: Create database
+  tags:
+  - download
+  - db
+  sudo: yes
+  sudo_user: postgres
+  postgresql_db:
+    name={{ angkot.db.name }}
+    owner={{ angkot.db.user }}
+    state=present
+
+- name: Setup PostGIS
+  tags:
+  - download
+  - db
+  sudo: yes
+  sudo_user: postgres
+  shell:
+    echo "CREATE EXTENSION {{ item }};" | psql {{ angkot.db.name }}
+  with_items:
+  - postgis
+  - postgis_topology
+
+# Node
+
+- name: Update Node.js libraries
+  tags:
+  - download
+  - node
+  sudo: yes
+  sudo_user: angkot
+  notify:
+  - restart webserver
+  npm:
+    path={{ _dir.src }}
+    state=latest
+
+# Ruby
+
+- name: Update ruby libraries
+  tags:
+  - download
+  sudo: yes
+  sudo_user: angkot
+  notify:
+  - restart webserver
+  shell:
+    GEM_HOME={{ _home }}/.gem
+    {{ _home }}/.gem/ruby/1.9.1/bin/bundle install
+    chdir={{ _dir.src }}
+
+- name: Copy localsettings
+  tags:
+  - download
+  sudo: yes
+  sudo_user: angkot
+  notify:
+  - restart webserver
+  template:
+    src=localsettings.py.j2
+    dest={{ _dir.src }}/angkot/localsettings.py
+    owner=angkot
+    group=angkot
+    mode=0644
+
+- name: Run grunt
+  tags:
+  - download
+  - update
+  sudo: yes
+  sudo_user: angkot
+  shell:
+    GEM_HOME={{ _home }}/.gem
+    PATH=$PATH:{{ _home }}/.gem/bin:{{ _dir.src }}/node_modules/.bin
+    grunt
+    chdir={{ _dir.src }}
+
+- name: Sync database
+  tags: download
+  sudo: yes
+  sudo_user: angkot
+  notify:
+  - restart webserver
+  django_manage:
+    command=syncdb
+    app_path={{ _dir.src }}
+    virtualenv={{ _dir.virtualenv }}
+
+- name: Migrate database
+  tags: download
+  sudo: yes
+  sudo_user: angkot
+  notify:
+  - restart webserver
+  django_manage:
+    command=migrate
+    app_path={{ _dir.src }}
+    virtualenv={{ _dir.virtualenv }}
+
+- name: Collect static files
+  tags: download
+  sudo: yes
+  sudo_user: angkot
+  notify:
+  - restart webserver
+  django_manage:
+    command=collectstatic
+    app_path={{ _dir.src }}
+    virtualenv={{ _dir.virtualenv }}
+

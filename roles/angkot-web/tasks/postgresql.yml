@@ -1,0 +1,15 @@
+---
+- name: Make sure the cluster exists # the cluster setup may fail because the LC_ALL is not set
+  tags:
+  - postgresql
+  shell:
+    LC_ALL=C pg_createcluster 9.3 main --start
+    creates=/var/lib/postgresql/9.3/main
+
+- name: Make sure the database runs
+  tags:
+  - postgresql
+  service:
+    name=postgresql
+    state=started
+

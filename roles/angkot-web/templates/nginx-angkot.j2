@@ -1,0 +1,42 @@
+upstream angkot {
+  server {{ _nginx_angkot_server }} fail_timeout=0;
+}
+
+server {
+  listen 80;
+  server_name {{ angkot.web.name }} {% if angkot.web.aliases %}{% for alias in angkot.web.aliases %}{{ alias }}{% endfor %}{% endif %};
+
+  return 301 https://{{ angkot.web.name }}$request_uri;
+
+  access_log {{ _dir.log }}/access.log;
+  error_log  {{ _dir.log }}/error.log;
+}
+
+server {
+  listen 443 ssl;
+  server_name {{ angkot.web.name }};
+
+  ssl_certificate     {{ angkot.cert }}/server.pem;
+  ssl_certificate_key {{ angkot.cert }}/server.key;
+
+  access_log {{ _dir.log }}/ssl-access.log;
+  error_log  {{ _dir.log }}/ssl-error.log;
+
+  root {{ _dir.public }};
+
+  location / {
+    try_files $uri @proxy_to_angkot;
+  }
+
+  location @proxy_to_angkot {
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header Host              $http_host;
+    proxy_redirect   off;
+    proxy_pass       http://angkot;
+  }
+
+  # what to serve if upstream is not available or crashes
+  error_page 500 502 503 504 /static/50x.html;
+}
+

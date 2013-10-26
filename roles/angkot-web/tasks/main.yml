@@ -1,0 +1,28 @@
+---
+- set_fact:
+    _dir:
+      base: "{{ angkot.base }}"
+
+      public: "{{ angkot.base }}/public"
+      static: "{{ angkot.base }}/public/static"
+
+      var: "{{ angkot.base }}/var"
+      log: "{{ angkot.base }}/var/log"
+      run: "{{ angkot.base }}/var/run"
+
+      app:        "{{ angkot.base }}/app"
+      bin:        "{{ angkot.base }}/app/bin"
+      virtualenv: "{{ angkot.base }}/app/env"
+      src:        "{{ angkot.base }}/app/src"
+
+    _user: angkot
+    _home: /home/angkot
+
+    _user_www: angkot-www
+    _home_www: "{{ angkot.base }}/public"
+
+- include: basic.yml
+- include: postgresql.yml
+- include: download.yml
+- include: serve.yml
+

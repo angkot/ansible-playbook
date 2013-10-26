@@ -1,0 +1,27 @@
+---
+- name: Make sure python-apt is installed
+  register: _python_apt
+  ignore_errors: yes
+  command:
+    dpkg -s python-apt
+
+- name: Install python-apt
+  when: _python_apt.rc != 0
+  shell:
+    apt-get update ;
+    apt-get install -y python-apt
+
+- name: Install basic packages
+  apt:
+    pkg={{ item }}
+    state=present
+  with_items:
+  - ntp
+  - vim
+  - git
+
+- name: Use the real vim
+  update_alternatives:
+    link=editor
+    package=/usr/bin/vim.basic
+

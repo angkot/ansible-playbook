@@ -1,0 +1,130 @@
+---
+# Facts
+
+- set_fact:
+    _socket_path: "{{ _dir.run }}/gunicorn.sock"
+
+- set_fact:
+    _nginx_angkot_server: "unix:{{ _socket_path }}"
+    _gunicorn_bind: "unix:{{ _socket_path }}"
+    _gunicorn_pidfile: "{{ _dir.run }}/gunicorn.pid"
+
+# Web user
+
+- name: Create web user
+  user:
+    name={{ _user_www }}
+    comment="Angkot Web User"
+    state=present
+    home={{ _home_www }}
+    shell=/bin/bash
+
+# Web user and directories
+
+- name: Create var, run, log directories
+  tags:
+  - serve
+  file:
+    path={{ item }}
+    owner={{ _user_www }}
+    group=angkot
+    mode=0775
+    state=directory
+  with_items:
+    - "{{ _dir.var }}"
+    - "{{ _dir.log }}"
+    - "{{ _dir.run }}"
+
+# Gunicorn
+
+- name: Install gunicorn
+  tags:
+  - serve
+  sudo: yes
+  sudo_user: angkot
+  pip:
+    name=gunicorn
+    virtualenv={{ _dir.virtualenv }}
+
+- name: Install gunicorn startup script
+  tags:
+  - serve
+  template:
+    src=start-gunicorn.j2
+    dest={{ _dir.bin }}/start-gunicorn
+    owner=angkot
+    group=angkot
+    mode=0755
+
+- name: Install nginx configuration
+  tags:
+  - serve
+  notify:
+  - restart webserver
+  template:
+    src=nginx-angkot.j2
+    dest=/etc/nginx/sites-available/angkot
+    owner=root
+    group=root
+    mode=0644
+
+# SSL Certificate
+
+- name: Create directory for SSL certificate and key
+  tags:
+  - serve
+  file:
+    path={{ angkot.cert }}
+    owner=www-data
+    group=www-data
+    mode=0700
+    state=directory
+
+- name: Copy SSL certificate and key
+  tags:
+  - serve
+  notify:
+  - restart webserver
+  copy:
+    src=../../../private/{{ deploy_type }}/files/cert/angkot.web.id/{{ item }}
+    dest={{ angkot.cert }}/{{ item }}
+    owner=www-data
+    group=www-data
+    mode=0400
+  with_items:
+  - server.pem
+  - server.key
+
+# Nginx
+
+- name: Enable nginx configuration
+  tags:
+  - serve
+  notify:
+  - restart webserver
+  file:
+    src=/etc/nginx/sites-available/angkot
+    dest=/etc/nginx/sites-enabled/angkot
+    state=link
+
+- name: Update nginx configuration
+  tags:
+  - serve
+  notify:
+  - restart webserver
+  lineinfile:
+    dest=/etc/nginx/nginx.conf
+    regexp='server_names_hash_bucket_size'
+    line='server_names_hash_bucket_size 64;'
+
+# Supervisor
+
+- name: Copy Supervisor configuration
+  tags:
+  - serve
+  notify:
+  - restart supervisor
+  template:
+    src=supervisor-angkot.conf
+    dest=/etc/supervisor/conf.d/angkot.conf
+
