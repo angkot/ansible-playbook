@@ -13,7 +13,7 @@ server {
 }
 
 server {
-  listen 443 ssl;
+  listen 443 ssl spdy;
   server_name {{ angkot.web.name }};
 
   ssl_certificate     {{ angkot.cert }}/server.pem;
