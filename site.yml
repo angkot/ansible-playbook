@@ -2,6 +2,7 @@
 - hosts: webserver
   vars_files:
   - "private/{{ deploy_type }}/group_vars/webserver"
+  sudo: yes
   roles:
   - common
   - angkot-web
