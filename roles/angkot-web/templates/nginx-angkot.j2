@@ -12,6 +12,18 @@ server {
   error_log  {{ _dir.log }}/error.log;
 }
 
+{% if angkot.web.aliases %}
+server {
+  listen 443 ssl spdy;
+  server_name {% for alias in angkot.web.aliases %}{{ alias }}{% endfor %};
+
+  ssl_certificate     {{ angkot.cert }}/server.pem;
+  ssl_certificate_key {{ angkot.cert }}/server.key;
+
+  return 301 https://{{ angkot.web.name }}$request_uri;
+}
+{% endif %}
+
 server {
   listen 443 ssl spdy;
   server_name {{ angkot.web.name }};
