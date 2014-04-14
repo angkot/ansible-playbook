@@ -4,7 +4,7 @@ upstream angkot {
 
 server {
   listen 80;
-  server_name {{ angkot.web.name }} {% if angkot.web.aliases %}{% for alias in angkot.web.aliases %}{{ alias }}{% endfor %}{% endif %};
+  server_name {{ angkot.web.name }}{% if angkot.web.aliases %}{% for alias in angkot.web.aliases %} {{ alias }}{% endfor %}{% endif %};
 
   return 301 https://{{ angkot.web.name }}$request_uri;
 
@@ -15,7 +15,7 @@ server {
 {% if angkot.web.aliases %}
 server {
   listen 443 ssl spdy;
-  server_name {% for alias in angkot.web.aliases %}{{ alias }}{% endfor %};
+  server_name{% for alias in angkot.web.aliases %} {{ alias }}{% endfor %};
 
   ssl_certificate     {{ angkot.cert }}/server.pem;
   ssl_certificate_key {{ angkot.cert }}/server.key;
