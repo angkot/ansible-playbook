@@ -30,7 +30,7 @@
   git:
     repo={{ angkot.repo }}
     dest={{ _dir.src }}
-    version=py3
+    version=master
 
 # Virtualenv
 
