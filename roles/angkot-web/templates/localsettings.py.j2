@@ -37,7 +37,7 @@ BING_MAPS_KEY = '{{ angkot.config.bingmaps.key }}'
 USERVOICE_KEY = '{{ angkot.config.uservoice.key }}'
 USERVOICE_FORUM_ID = '{{ angkot.config.uservoice.forum_id }}'
 
-ALLOWED_HOSTS = ['{{ angkot.web.name }}']
+ALLOWED_HOSTS = ['{{ angkot.web.name }}'{% if angkot.web.aliases %}{% for alias in angkot.web.aliases %}, '{{ alias }}'{% endfor %}{% endif %}]
 
 DEBUG = False
 TEMPLATE_DEBUG = False
