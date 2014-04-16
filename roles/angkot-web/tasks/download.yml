@@ -41,7 +41,7 @@
   sudo_user: angkot
   register: _virtualenv
   command:
-    virtualenv -p python3.3 {{ _dir.virtualenv }}
+    virtualenv -p python3.4 {{ _dir.virtualenv }}
     chdir={{ _dir.base }}
     creates={{ _dir.virtualenv }}
     # The chdir bits is important since /root is not accessible by angkot
