@@ -34,17 +34,27 @@
 
 # Virtualenv
 
-- name: Create virtualenv
+- name: Create virtualenv (using Python's venv)
   tags:
   - download
   sudo: yes
   sudo_user: angkot
   register: _virtualenv
   command:
-    virtualenv -p python3.4 {{ _dir.virtualenv }}
+    pyvenv-3.4 {{ _dir.virtualenv }}
     chdir={{ _dir.base }}
     creates={{ _dir.virtualenv }}
     # The chdir bits is important since /root is not accessible by angkot
+
+- name: Make sure the pip is placed inside the bin directory
+  tags:
+  - download
+  file:
+    src={{ _dir.virtualenv }}/local/bin/pip
+    dest={{ _dir.virtualenv }}/bin/pip
+    owner=angkot
+    group=angkot
+    state=link
 
 - name: Install required python libraries
   tags:
@@ -55,6 +65,7 @@
   - restart webserver
   pip:
     virtualenv={{ _dir.virtualenv }}
+    virtualenv_command=pyvenv-3.4
     requirements={{ _dir.src }}/requirements.txt
 
 # Gem

@@ -45,6 +45,7 @@
   pip:
     name=gunicorn
     virtualenv={{ _dir.virtualenv }}
+    virtualenv_command=pyvenv-3.4
 
 - name: Install gunicorn startup script
   tags:
