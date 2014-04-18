@@ -40,21 +40,13 @@
   sudo: yes
   sudo_user: angkot
   register: _virtualenv
+  environment:
+    VIRTUAL_ENV: "{{ _dir.virtualenv }}"
   command:
     pyvenv-3.4 {{ _dir.virtualenv }}
     chdir={{ _dir.base }}
     creates={{ _dir.virtualenv }}
     # The chdir bits is important since /root is not accessible by angkot
-
-- name: Make sure the pip is placed inside the bin directory
-  tags:
-  - download
-  file:
-    src={{ _dir.virtualenv }}/local/bin/pip
-    dest={{ _dir.virtualenv }}/bin/pip
-    owner=angkot
-    group=angkot
-    state=link
 
 - name: Install required python libraries
   tags:
@@ -63,6 +55,8 @@
   sudo_user: angkot
   notify:
   - restart webserver
+  environment:
+    VIRTUAL_ENV: "{{ _dir.virtualenv }}"
   pip:
     virtualenv={{ _dir.virtualenv }}
     virtualenv_command=pyvenv-3.4
@@ -175,6 +169,8 @@
   sudo_user: angkot
   notify:
   - restart webserver
+  environment:
+    VIRTUAL_ENV: "{{ _dir.virtualenv }}"
   django_manage:
     command=syncdb
     app_path={{ _dir.src }}
@@ -186,6 +182,8 @@
   sudo_user: angkot
   notify:
   - restart webserver
+  environment:
+    VIRTUAL_ENV: "{{ _dir.virtualenv }}"
   django_manage:
     command=migrate
     app_path={{ _dir.src }}
@@ -197,6 +195,8 @@
   sudo_user: angkot
   notify:
   - restart webserver
+  environment:
+    VIRTUAL_ENV: "{{ _dir.virtualenv }}"
   django_manage:
     command=collectstatic
     app_path={{ _dir.src }}
