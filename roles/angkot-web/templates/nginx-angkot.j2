@@ -36,6 +36,8 @@ server {
 
   root {{ _dir.public }};
 
+  add_header Strict-Transport-Security "max-age=2592000; includeSubDomains";
+
   location /static/ {
     gzip_static on;
 
