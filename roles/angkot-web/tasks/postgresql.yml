@@ -6,6 +6,31 @@
     LC_ALL=C pg_createcluster 9.3 main --start
     creates=/var/lib/postgresql/9.3/main
 
+- name: Configure for master/slave configuration
+  tags:
+  - postgresql
+  notify:
+  - restart postgresql
+  lineinfile:
+    dest=/etc/postgresql/9.3/main/postgresql.conf
+    regexp="{{ item.key }}"
+    line="{{ item.value }}"
+  with_items:
+    - { key: "wal_level", value: "wal_level = 'hot_standby'" }
+    - { key: "archive_mode", value: "archive_mode = on" }
+    - { key: "archive_command", value: "archive_command = 'cd .'" }
+    - { key: "max_wal_senders", value: "max_wal_senders = 1" }
+    - { key: "hot_standby", value: "host_standby = on" }
+
+- name: Add access to the replication user
+  tags:
+  - postgresql
+  notify:
+  - restart postgresql
+  lineinfile:
+    dest=/etc/postgresql/9.3/main/pg_hba.conf
+    line="host replication rep 127.0.0.1/32 md5"
+
 - name: Make sure the database runs
   tags:
   - postgresql
