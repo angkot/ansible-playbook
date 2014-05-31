@@ -1,0 +1,49 @@
+---
+- set_fact:
+    lock_file: /root/.angkot-ansible.clean.remove-packages
+
+- name: Check lock
+  sudo: yes
+  register: lock_status
+  stat:
+    path={{ lock_file }}
+
+- name: Remove unneeded packages
+  when: lock_status.stat.exists == False
+  sudo: yes
+  register: removed
+  apt:
+    name={{ item }}
+    state=absent
+  with_items:
+  - apache2
+  - apache2-bin
+  - apache2-data
+  - apache2-doc
+  - apache2-mpm-prefork
+  - apache2-utils
+  - bind9
+  - fontconfig
+  - fontconfig-config
+  - fonts-dejavu
+  - fonts-dejavu-core
+  - fonts-dejavu-extra
+  - fonts-freefont-ttf
+  - postfix
+  - samba
+  - samba-common
+  - samba-common-bin
+  - samba-dsdb-modules
+  - samba-libs:amd64
+  - ttf-dejavu
+  - ttf-dejavu-core
+  - ttf-dejavu-extra
+  - ttf-freefont
+
+- name: Add lock
+  when: removed and lock_status.stat.exists == False
+  sudo: yes
+  file:
+    path={{ lock_file }}
+    state=touch
+
