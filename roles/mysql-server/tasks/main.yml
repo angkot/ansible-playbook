@@ -1,0 +1,50 @@
+# Install secure MySQL server
+# Adapted from http://stackoverflow.com/a/16652653
+---
+- name: Install MySQL package
+  apt:
+    pkg={{ item }}
+    state=present
+  with_items:
+  - mysql-server
+  - python-mysqldb
+
+- name: Make sure MySQL is started
+  service:
+    name=mysql
+    state=started
+
+- name: Update root password
+  ignore_errors: True
+  mysql_user:
+    name=root
+    host={{ item }}
+    password={{ _mysql.root_password }}
+  with_items:
+  - "{{ ansible_hostname }}"
+  - 127.0.0.1
+  - ::1
+  - localhost
+
+- name: Delete anonymous MySQL server user for {{ ansible_hostname }}
+  mysql_user:
+    user=""
+    host="{{ ansible_hostname }}"
+    state=absent
+    login_user=root
+    login_password={{ _mysql.root_password }}
+
+- name: Delete anonymous MySQL server user for localhost
+  mysql_user:
+    user=""
+    state=absent
+    login_user=root
+    login_password={{ _mysql.root_password }}
+
+- name: Remove the MySQL test database
+  mysql_db:
+    db=test
+    state=absent
+    login_user=root
+    login_password={{ _mysql.root_password }}
+
