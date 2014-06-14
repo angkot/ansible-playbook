@@ -1,4 +1,10 @@
 ---
+- name: Make sure Ubuntu Archive key is installed
+  apt_key:
+    keyserver=keyserver.ubuntu.com
+    id=40976EAF437D05B5
+    state=present
+
 - name: Make sure python-apt is installed
   register: _python_apt
   ignore_errors: yes
