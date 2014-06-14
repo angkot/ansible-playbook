@@ -63,7 +63,7 @@ import warnings
 warnings.filterwarnings('ignore', "apt API not stable yet", FutureWarning)
 
 # update-alternatives related constants
-UA = "/usr/sbin/update-alternatives"
+UA = "/usr/bin/update-alternatives"
 
 def run_ua(command):
     try:
